@@ -1,0 +1,710 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eksplorasi Peluang Kejadian Majemuk</title>
+<style>
+:root {
+  --navy:#244a87;--blue:#3976d3;--light:#edf4ff;
+  --purple:#8061d9;--green:#16865b;--red:#d34e5c;
+  --text:#26344b;--muted:#68768b;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;color:var(--text);background:#f3f6fc;line-height:1.6}
+header{padding:30px 18px;text-align:center;color:white;background:linear-gradient(125deg,#244a87,#477dd0)}
+header h1{margin:0 0 8px;font-size:clamp(23px,4vw,34px)}
+header p{margin:0}
+main{max-width:1100px;margin:auto;padding:20px}
+.panel{background:white;border-radius:16px;padding:22px;margin-bottom:18px;box-shadow:0 4px 18px #213c6310}
+h2,h3{color:var(--navy);margin-top:0}
+h2{font-size:22px}h3{font-size:17px}p{margin:9px 0}
+.note,.small{color:var(--muted);font-size:13px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.tab{padding:12px 8px;background:white;color:var(--navy);border:2px solid #d9e4f5;border-radius:10px;cursor:pointer;font-weight:bold}
+.tab.active{background:var(--navy);color:white;border-color:var(--navy)}
+.topic{display:none}.topic.active{display:block;animation:appear .35s ease}
+@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+button,input{font:inherit}
+button{border:0;border-radius:9px;padding:10px 15px;cursor:pointer;font-weight:bold;transition:transform .15s,filter .15s}
+button:hover:not(:disabled){filter:brightness(.96);transform:translateY(-1px)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:var(--blue);color:white}
+.secondary{background:#e8effb;color:var(--navy)}
+.green{background:var(--green);color:white}
+button:focus-visible,input:focus-visible{outline:3px solid #f5c451;outline-offset:2px}
+label{display:block;margin:10px 0 5px;font-weight:bold}
+input{width:100%;min-width:0;padding:10px 12px;border:1px solid #c8d4e5;border-radius:8px;background:white;color:var(--text)}
+.input-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.input-grid.three{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.visual{background:#f7faff;border:1px solid #e1eafa;border-radius:14px;padding:15px;margin:16px 0}
+.button-row{display:flex;flex-wrap:wrap;gap:9px;margin:12px 0}
+.result{display:none;background:#eef8f2;border-left:4px solid var(--green);border-radius:8px;padding:14px;margin-top:15px;overflow-wrap:anywhere}
+.result.show{display:block;animation:appear .25s ease}
+.result p{margin:7px 0}
+.math{background:#edf3ff;border-radius:8px;padding:10px 12px;margin:9px 0;font-size:17px;overflow-wrap:anywhere}
+.badge{display:inline-block;border-radius:20px;padding:4px 10px;background:#e6eefc;color:var(--navy);font-size:13px;font-weight:bold}
+.venn-svg{width:100%;max-width:570px;display:block;margin:auto}
+.venn-circle{transition:cx .8s cubic-bezier(.2,.75,.25,1),fill .4s,opacity .4s,r .4s}
+.venn-step{min-height:45px;background:#f7faff;border-radius:8px;padding:12px;margin-top:10px;border-left:4px solid var(--blue)}
+.gift-scene{display:flex;justify-content:center;align-items:center;gap:28px;flex-wrap:wrap;padding:15px}
+.gift{width:112px;text-align:center;font-size:14px;font-weight:bold}
+.gift-icon{font-size:52px;display:block;line-height:1.3}
+.coin-area{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;margin:16px 0}
+.coin-card{background:#f7faff;border:1px solid #dce6f5;border-radius:12px;padding:15px;text-align:center}
+.coin{width:90px;height:90px;margin:10px auto;border-radius:50%;border:5px solid #d9a83e;background:radial-gradient(circle at 30% 25%,#fff0a5,#e9b847 55%,#b77c18);box-shadow:inset 0 0 0 3px #f8d66c,0 6px 10px #28375025;display:grid;place-items:center;font-size:19px;font-weight:bold;color:#754c0a}
+.coin.flip{animation:flipCoin .65s ease}
+@keyframes flipCoin{0%{transform:rotateY(0) scale(1)}50%{transform:rotateY(540deg) scale(.8)}100%{transform:rotateY(1080deg) scale(1)}}
+.sample-space{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.sample-item{border:1px solid #dce6f5;background:white;border-radius:10px;padding:12px;text-align:center;transition:.2s}
+.sample-item strong{display:block;color:var(--navy)}
+.sample-item span{font-size:13px;color:var(--muted)}
+.sample-item.target{border:2px solid var(--green);background:#e7f8ee;box-shadow:0 0 0 3px #16865b18}
+.sample-item.target strong{color:var(--green)}
+.target-label{display:inline-block;font-size:11px;font-weight:bold;color:white;background:var(--green);border-radius:20px;padding:2px 8px;margin-top:5px}
+.ball-box{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;padding:15px 5px}
+.ball{width:65px;height:65px;border-radius:50%;border:2px solid #ffffffa0;box-shadow:inset -9px -11px 16px #0003,inset 7px 8px 12px #ffffff9c,0 7px 10px #26344b25;cursor:pointer;transition:transform .2s,box-shadow .2s,opacity .2s;position:relative}
+.ball::after{content:"";position:absolute;width:19px;height:12px;left:13px;top:11px;border-radius:50%;background:#ffffffa0;transform:rotate(-35deg);filter:blur(1px)}
+.ball.red-ball{background:radial-gradient(circle at 28% 23%,#ffb4b4,#f04444 42%,#a70f26 85%)}
+.ball.blue-ball{background:radial-gradient(circle at 28% 23%,#b9e4ff,#3e9be6 42%,#12518f 85%)}
+.ball:hover:not(:disabled){transform:translateY(-5px) scale(1.05)}
+.ball:disabled{cursor:not-allowed;opacity:.35;filter:grayscale(.25)}
+.slot-ball{width:58px;height:58px;border-radius:50%;box-shadow:inset -8px -8px 12px #0003,inset 5px 5px 10px #ffffffa0,0 5px 8px #0002;margin:auto}
+.slot-ball.red-ball{background:radial-gradient(circle at 28% 23%,#ffb4b4,#f04444 42%,#a70f26 85%)}
+.slot-ball.blue-ball{background:radial-gradient(circle at 28% 23%,#b9e4ff,#3e9be6 42%,#12518f 85%)}
+.draw-slot{min-height:105px;display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+.draw-result{text-align:center;min-width:100px}
+.draw-history{margin-top:12px;padding:12px;border-radius:9px;background:white;border:1px solid #dce6f5;overflow-wrap:anywhere}
+.condition-btn{background:#e1e5ec;color:#39465a;border:2px solid #d0d6e0}
+.condition-btn.selected{background:var(--blue);color:white;border-color:var(--blue)}
+# m4ShowBlue.selected{background:var(--purple);border-color:var(--purple)}
+.condition-btn.blue-selected{background:var(--purple);color:white;border-color:var(--purple)}
+.condition-btn.green-selected{background:var(--green);color:white;border-color:var(--green)}
+hr{border:0;border-top:1px solid #e2e9f4;margin:18px 0}
+@media(max-width:650px){
+ main{padding:12px}.panel{padding:16px}
+ .tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .input-grid.three{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ball{width:55px;height:55px}.coin{width:75px;height:75px}
+}
+@media(max-width:400px){.input-grid,.input-grid.three,.sample-space{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Eksplorasi Peluang Kejadian Majemuk</h1>
+<p>Amati ilustrasi, ubah angka, lakukan percobaan, lalu temukan cara menghitung peluang.</p>
+</header>
+<main>
+<section class="panel">
+<h2>Pilih Materi</h2>
+<div class="tabs" role="tablist" aria-label="Materi peluang">
+<button class="tab active" data-topic="m1" role="tab" aria-selected="true">1. Saling Lepas</button>
+<button class="tab" data-topic="m2" role="tab" aria-selected="false">2. Tidak Saling Lepas</button>
+<button class="tab" data-topic="m3" role="tab" aria-selected="false">3. Saling Bebas</button>
+<button class="tab" data-topic="m4" role="tab" aria-selected="false">4. Peluang Bersyarat</button>
+</div>
+</section>
+
+<!-- MATERI 1 -->
+<section class="topic active" id="m1" role="tabpanel">
+<section class="panel">
+<span class="badge">Materi 1</span>
+<h2>Peluang Kejadian Saling Lepas</h2>
+<p>Dua kejadian disebut saling lepas apabila keduanya tidak mempunyai anggota yang sama. Dengan demikian, kedua kejadian tidak dapat terjadi secara bersamaan dalam satu percobaan.</p>
+<p>Contoh: pada sebuah undian, satu kupon hanya dapat memenangkan satu hadiah. Kejadian mendapat hadiah buku dan tumbler saling lepas jika satu kupon tidak mungkin memenangkan keduanya sekaligus.</p>
+<div class="visual">
+<h3>Amati diagram Venn</h3>
+<svg class="venn-svg" viewBox="0 0 500 245" role="img" aria-label="Dua lingkaran kejadian yang tidak beririsan">
+<rect x="12" y="10" width="476" height="220" rx="15" fill="#fff" stroke="#cdd9ec" stroke-width="2"/>
+<text x="28" y="34" fill="#68768b" font-size="12">Ruang sampel (S)</text>
+<circle id="m1CircleA" class="venn-circle" cx="145" cy="120" r="68" fill="#78aaf5" fill-opacity=".72" stroke="#3976d3" stroke-width="3"/>
+<circle id="m1CircleB" class="venn-circle" cx="355" cy="120" r="68" fill="#b4a1f3" fill-opacity=".72" stroke="#8061d9" stroke-width="3"/>
+<text x="145" y="124" text-anchor="middle" font-size="20" font-weight="bold" fill="#163e7b">A</text>
+<text x="355" y="124" text-anchor="middle" font-size="20" font-weight="bold" fill="#4c3197">B</text>
+<text id="m1EmptyIntersection" x="250" y="205" text-anchor="middle" font-size="16" font-weight="bold" fill="#d34e5c" opacity="0">A ∩ B = ∅</text>
+</svg>
+<div class="button-row" style="justify-content:center">
+<button class="primary" id="m1Animate">▶ Amati diagram</button>
+<button class="secondary" id="m1ResetDiagram">Ulangi dari awal</button>
+</div>
+<div class="venn-step" id="m1DiagramText" aria-live="polite">Tekan “Amati diagram” untuk memulai Pengamatan 1.</div>
+</div>
+</section>
+<section class="panel">
+<h2>Soal Kontekstual: Undian Hadiah Sekolah</h2>
+<div class="visual">
+<div class="gift-scene">
+<div class="gift"><span class="gift-icon">📚</span>Hadiah buku</div>
+<div class="gift"><span class="gift-icon">🎟️</span>Kupon undian</div>
+<div class="gift"><span class="gift-icon">🥤</span>Hadiah tumbler</div>
+</div>
+<p>Sebuah panitia memiliki sejumlah kupon undian. Setiap kupon hanya dapat memperoleh satu hadiah. Masukkan jumlah kupon seluruhnya dan jumlah kupon yang berpeluang mendapatkan masing-masing hadiah. Hitung peluang memperoleh buku atau tumbler!</p>
+</div>
+<div class="input-grid three">
+<div><label for="m1Total">Jumlah seluruh kupon</label><input id="m1Total" type="number" min="1" step="1" value="0"></div>
+<div><label for="m1A">Kupon hadiah buku (A)</label><input id="m1A" type="number" min="0" step="1" value="0"></div>
+<div><label for="m1B">Kupon hadiah tumbler (B)</label><input id="m1B" type="number" min="0" step="1" value="0"></div>
+</div>
+<p class="note">Pastikan jumlah kupon buku dan tumbler tidak melebihi jumlah seluruh kupon.</p>
+<button class="primary" id="m1Calculate">Hitung Peluang</button>
+<div class="result" id="m1Result" aria-live="polite"></div>
+</section>
+</section>
+
+<!-- MATERI 2 -->
+<section class="topic" id="m2" role="tabpanel">
+<section class="panel">
+<span class="badge">Materi 2</span>
+<h2>Peluang Kejadian Tidak Saling Lepas</h2>
+<p>Dua kejadian tidak saling lepas apabila keduanya memiliki anggota yang sama. Artinya, kedua kejadian dapat terjadi secara bersamaan.</p>
+<div class="visual">
+<h3>Amati perubahan diagram Venn</h3>
+<svg class="venn-svg" viewBox="0 0 500 245" role="img" aria-label="Diagram Venn dua kejadian yang beririsan">
+<defs><clipPath id="m2ClipA"><circle id="m2ClipCircle" cx="190" cy="120" r="72"/></clipPath></defs>
+<rect x="12" y="10" width="476" height="220" rx="15" fill="#fff" stroke="#cdd9ec" stroke-width="2"/>
+<text x="28" y="34" fill="#68768b" font-size="12">Ruang sampel (S)</text>
+<circle id="m2CircleA" class="venn-circle" cx="145" cy="120" r="72" fill="#78aaf5" fill-opacity=".72" stroke="#3976d3" stroke-width="3"/>
+<circle id="m2CircleB" class="venn-circle" cx="355" cy="120" r="72" fill="#b4a1f3" fill-opacity=".72" stroke="#8061d9" stroke-width="3"/>
+<circle id="m2Intersection" cx="310" cy="120" r="72" fill="#3976d3" fill-opacity="1" clip-path="url(#m2ClipA)" opacity="0"/>
+<text id="m2LabelA" x="145" y="124" text-anchor="middle" font-size="20" font-weight="bold" fill="#163e7b">A</text>
+<text id="m2LabelB" x="355" y="124" text-anchor="middle" font-size="20" font-weight="bold" fill="#4c3197">B</text>
+</svg>
+<div class="button-row">
+<button class="primary" id="m2Start">▶ Mulai animasi</button>
+<button class="secondary" id="m2ObserveA" disabled>Amati A</button>
+<button class="secondary" id="m2ObserveB" disabled>Amati B</button>
+<button class="secondary" id="m2ObserveI" disabled>Amati irisan</button>
+<button class="secondary" id="m2Reset">Ulangi</button>
+</div>
+<div class="venn-step" id="m2DiagramText" aria-live="polite">Tekan “Mulai animasi” untuk melihat kedua kejadian bergerak hingga beririsan.</div>
+</div>
+</section>
+<section class="panel">
+<h2>Soal Kontekstual: Ekstrakurikuler Siswa</h2>
+<div class="visual">
+<p>Di sebuah sekolah, siswa boleh mengikuti klub sains, klub bahasa, atau keduanya. Misalnya, dari 100 siswa, sebanyak 58 mengikuti klub sains, 45 mengikuti klub bahasa, dan 20 mengikuti kedua klub.</p>
+<p>Masukkan data sesuai soal atau ubah angkanya. Hitung peluang seorang siswa yang dipilih secara acak mengikuti klub sains atau klub bahasa.</p>
+</div>
+<div class="input-grid">
+<div><label for="m2Total">Jumlah seluruh siswa, n(S)</label><input id="m2Total" type="number" min="1" step="1" value="0"></div>
+<div><label for="m2A">Mengikuti klub sains, n(A)</label><input id="m2A" type="number" min="0" step="1" value="0"></div>
+<div><label for="m2B">Mengikuti klub bahasa, n(B)</label><input id="m2B" type="number" min="0" step="1" value="0"></div>
+<div><label for="m2I">Mengikuti keduanya, n(A ∩ B)</label><input id="m2I" type="number" min="0" step="1" value="0"></div>
+</div>
+<button class="primary" id="m2Calculate">Hitung Peluang Gabungan</button>
+<div class="result" id="m2Result" aria-live="polite"></div>
+</section>
+</section>
+
+<!-- MATERI 3 -->
+<section class="topic" id="m3" role="tabpanel">
+<section class="panel">
+<span class="badge">Materi 3</span>
+<h2>Peluang Kejadian Saling Bebas</h2>
+<p>Dua kejadian saling bebas apabila terjadinya kejadian pertama tidak mengubah peluang terjadinya kejadian kedua.</p>
+<div class="visual">
+<h3>Ilustrasi: Melempar dua koin</h3>
+<p>Koin pertama dan kedua dilempar secara terpisah. Setiap koin memiliki dua kemungkinan hasil: angka (A) atau gambar (G).</p>
+<div class="coin-area">
+<div class="coin-card"><strong>Koin pertama</strong><div class="coin" id="coin1">?</div><button class="primary" id="flip1">Lempar koin 1</button><p class="small" id="coin1Text">Belum dilempar</p></div>
+<div class="coin-card"><strong>Koin kedua</strong><div class="coin" id="coin2">?</div><button class="primary" id="flip2">Lempar koin 2</button><p class="small" id="coin2Text">Belum dilempar</p></div>
+</div>
+<button class="secondary" id="resetCoins">Ulangi percobaan</button>
+<hr>
+<h3>Ruang sampel dua koin</h3>
+<p>Setiap kotak mewakili satu pasangan hasil yang mungkin. Perhatikan bahwa urutan koin pertama dan kedua dibedakan.</p>
+<div class="sample-space">
+<div class="sample-item"><strong>Angka – Angka (AA)</strong><span>Koin 1 angka, koin 2 angka</span></div>
+<div class="sample-item"><strong>Angka – Gambar (AG)</strong><span>Koin 1 angka, koin 2 gambar</span></div>
+<div class="sample-item"><strong>Gambar – Angka (GA)</strong><span>Koin 1 gambar, koin 2 angka</span></div>
+<div class="sample-item target"><strong>Gambar – Gambar (GG)</strong><span>Koin pertama dan kedua menunjukkan gambar</span><br><span class="target-label">Kejadian yang dicari</span></div>
+</div>
+<div class="math">Banyak hasil yang mungkin = 4</div>
+<div class="math">Banyak hasil yang mendukung GG = 1</div>
+<div class="math">P(GG) = 1/4 = 25%</div>
+<p>Karena kedua koin seimbang, setiap koin memiliki peluang gambar sebesar 1/2. Maka peluang kedua koin menunjukkan gambar adalah 1/2 × 1/2 = 1/4.</p>
+<p class="note">Hasil lemparan yang tampil merupakan simulasi acak. Diagram ruang sampel menunjukkan kemungkinan hasil secara teoretis.</p>
+</div>
+</section>
+<section class="panel">
+<h2>Soal Kontekstual: Dua Koin</h2>
+<div class="visual">
+<p>Seorang siswa melempar dua koin seimbang. Kejadian A adalah koin pertama menunjukkan gambar, sedangkan kejadian B adalah koin kedua menunjukkan gambar.</p>
+<p>Untuk koin seimbang, peluang gambar pada masing-masing koin adalah 50%. Kamu juga dapat mengubah nilai peluang untuk mencoba situasi lain, selama A dan B tetap saling bebas.</p>
+</div>
+<div class="input-grid">
+<div><label for="m3A">Peluang kejadian A (dalam persen)</label><input id="m3A" type="number" min="0" max="100" step="1" value="0"></div>
+<div><label for="m3B">Peluang kejadian B (dalam persen)</label><input id="m3B" type="number" min="0" max="100" step="1" value="0"></div>
+</div>
+<button class="primary" id="m3Calculate">Hitung Peluang Bersamaan</button>
+<div class="result" id="m3Result" aria-live="polite"></div>
+</section>
+</section>
+
+<!-- MATERI 4 -->
+<section class="topic" id="m4" role="tabpanel">
+<section class="panel">
+<span class="badge">Materi 4</span>
+<h2>Peluang Bersyarat</h2>
+<p>Peluang bersyarat adalah peluang suatu kejadian dengan diketahui bahwa kejadian lain telah terjadi.</p>
+<div class="math">P(A|B) = P(A ∩ B) / P(B), dengan P(B) &gt; 0</div>
+<p>Kejadian setelah tanda “jika” menjadi kondisi yang diketahui. Kondisinya tidak harus berwarna merah; kita dapat menghitung peluang berdasarkan bola pertama merah maupun biru.</p>
+</section>
+
+<section class="panel">
+<h2>Soal Interaktif: Mengambil Bola Tanpa Pengembalian</h2>
+<div class="visual">
+<p>Atur jumlah bola merah dan biru, lalu tekan “Terapkan jumlah bola”. Klik bola untuk mengambilnya satu per satu. Bola yang sudah diambil tidak dikembalikan sampai kamu menekan “Kembalikan semua bola”.</p>
+<p>Setelah setiap pengambilan, jumlah bola yang tersisa dan peluang warna pada pengambilan berikutnya akan diperbarui.</p>
+<p class="note">Peluang teoretis dihitung dari kondisi yang dipilih. Hasil pengambilan aktual ditampilkan terpisah agar keduanya tidak tertukar.</p>
+</div>
+
+<div class="input-grid">
+<div><label for="m4RedCount">Jumlah bola merah</label><input id="m4RedCount" type="number" min="1" max="20" step="1" value="3"></div>
+<div><label for="m4BlueCount">Jumlah bola biru</label><input id="m4BlueCount" type="number" min="1" max="20" step="1" value="2"></div>
+</div>
+<button class="secondary" id="m4SetBalls">Terapkan jumlah bola</button>
+<p class="note">Masukkan 1 sampai 20 bola untuk setiap warna.</p>
+
+<div class="visual">
+<h3>Kantong bola</h3>
+<p class="note">Klik bola yang ingin diambil. Bola yang telah diambil tidak bisa dipilih lagi sampai dikembalikan.</p>
+<div class="ball-box" id="ballBox"></div>
+<div class="button-row" style="justify-content:center">
+<button class="secondary" id="m4Undo" disabled>Batalkan pengambilan terakhir</button>
+<button class="secondary" id="m4Reset">Kembalikan semua bola</button>
+</div>
+<p class="small" id="m4RemainingText">Terapkan jumlah bola untuk memulai.</p>
+</div>
+
+<div class="visual">
+<h3>Hasil pengambilan</h3>
+<div class="draw-slot">
+<div class="draw-result"><div id="m4Slot1" class="slot-ball" style="display:none"></div><strong>Bola pertama</strong><p id="m4FirstText" class="small">Belum diambil</p></div>
+<div class="draw-result"><div id="m4Slot2" class="slot-ball" style="display:none"></div><strong>Bola kedua</strong><p id="m4SecondText" class="small">Belum diambil</p></div>
+</div>
+<div class="draw-history" id="m4History">Urutan pengambilan akan ditampilkan di sini.</div>
+<p id="m4DrawText" aria-live="polite">Terapkan jumlah bola untuk memulai.</p>
+</div>
+<div class="result show" id="m4LiveResult" aria-live="polite">Terapkan jumlah bola untuk memulai percobaan.</div>
+</section>
+
+<section class="panel">
+<h2>Menentukan Peluang Bersyarat</h2>
+<div class="visual">
+<p><strong>Kejadian A:</strong> bola pertama merah.</p>
+<p><strong>Kejadian B:</strong> bola kedua merah.</p>
+<p><strong>Kejadian Aᶜ:</strong> bola pertama biru.</p>
+<p>Pilih kondisi yang ingin dipelajari. Kamu tetap dapat memilih kondisi teoretis meskipun hasil pengambilan aktual berbeda. Jika kondisi sudah diamati, informasi itu akan ditampilkan bersama hasil perhitungan.</p>
+</div>
+<div class="button-row">
+<button class="condition-btn" id="m4ShowBA" disabled>P(B|A): pertama merah</button>
+<button class="condition-btn" id="m4ShowBlue" disabled>P(B|Aᶜ): pertama biru</button>
+<button class="condition-btn" id="m4ShowAB" disabled>P(A|B): kedua merah</button>
+</div>
+<p class="note" id="m4FormulaHint">Terapkan jumlah bola terlebih dahulu.</p>
+<div class="result" id="m4FormulaResult" aria-live="polite"></div>
+</section>
+</section>
+
+<section class="panel">
+<h2>Kesimpulan</h2>
+<p id="summaryText">Selesaikan aktivitas atau perhitungan pada materi yang dipilih untuk menampilkan kesimpulannya.</p>
+</section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+function showResult(id,html){$(id).innerHTML=html;$(id).classList.add("show")}
+function hideResult(id){$(id).classList.remove("show");$(id).innerHTML=""}
+function readInteger(id,min,max){
+ const raw=$(id).value.trim();
+ if(raw==="")return null;
+ const v=Number(raw);
+ return Number.isInteger(v)&&v>=min&&v<=max?v:null;
+}
+function fraction(n,d){
+ if(d===0)return "tidak terdefinisi";
+ if(n===0)return "0";
+ if(n===d)return "1";
+ const gcd=(a,b)=>b===0?a:gcd(b,a%b),g=gcd(Math.abs(n),Math.abs(d));
+ return `${n/g}/${d/g}`;
+}
+function decimal(v){return (v*100).toLocaleString("id-ID",{maximumFractionDigits:2})+"%"}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function setSummary(html){$("summaryText").innerHTML=html}
+function clearSummary(){setSummary("Selesaikan aktivitas atau perhitungan pada materi yang dipilih untuk menampilkan kesimpulannya.")}
+
+document.querySelectorAll('input[type="number"]').forEach(input=>{
+ input.addEventListener("focus",()=>{if(input.value==="0")input.value=""});
+ input.addEventListener("blur",()=>{if(input.value.trim()==="")input.value="0"});
+ input.addEventListener("input",()=>input.setCustomValidity(""));
+});
+document.querySelectorAll(".tab").forEach(tab=>{
+ tab.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(t=>{t.classList.remove("active");t.setAttribute("aria-selected","false")});
+  document.querySelectorAll(".topic").forEach(t=>t.classList.remove("active"));
+  tab.classList.add("active");tab.setAttribute("aria-selected","true");
+  $(tab.dataset.topic).classList.add("active");clearSummary();
+ });
+});
+
+/* MATERI 1 */
+let m1Step=-1;
+const m1Explanations=[
+`<strong>Pengamatan 1 — Mengenali kejadian A dan B.</strong><p>Lingkaran A menggambarkan kejadian memperoleh hadiah buku. Lingkaran B menggambarkan kejadian memperoleh hadiah tumbler. Amati posisi kedua lingkaran.</p>`,
+`<strong>Pengamatan 2 — Kedua lingkaran tidak beririsan.</strong><p>Lingkaran A dan B terpisah. Tidak ada anggota yang dimiliki kedua kejadian sekaligus.</p><div class="math">A ∩ B = ∅</div><p>Simbol ∅ berarti himpunan kosong.</p>`,
+`<strong>Pengamatan 3 — Kedua kejadian tidak dapat terjadi bersamaan.</strong><p>Dalam contoh undian, satu kupon hanya dapat memenangkan satu hadiah.</p>`,
+`<strong>Pengamatan 4 — Hubungan dengan peluang.</strong><p>Karena irisan A dan B adalah himpunan kosong, peluang kedua kejadian terjadi bersamaan adalah nol.</p><div class="math">P(A ∩ B) = 0</div><div class="math">P(A ∪ B) = P(A) + P(B)</div>`
+];
+function resetM1Diagram(){
+ $("m1CircleA").setAttribute("cx","145");$("m1CircleB").setAttribute("cx","355");
+ $("m1CircleA").setAttribute("r","68");$("m1CircleB").setAttribute("r","68");
+ $("m1EmptyIntersection").setAttribute("opacity","0");m1Step=-1;
+ $("m1DiagramText").innerHTML='Tekan “Amati diagram” untuk memulai Pengamatan 1.';
+ $("m1Animate").textContent="▶ Amati diagram";
+}
+$("m1Animate").addEventListener("click",()=>{
+ m1Step=(m1Step+1)%m1Explanations.length;
+ $("m1CircleA").setAttribute("cx",m1Step>=1?"125":"145");
+ $("m1CircleB").setAttribute("cx",m1Step>=1?"375":"355");
+ $("m1CircleA").setAttribute("r",m1Step>=2?"73":"68");
+ $("m1CircleB").setAttribute("r",m1Step>=2?"73":"68");
+ $("m1EmptyIntersection").setAttribute("opacity",m1Step>=1?"1":"0");
+ $("m1DiagramText").innerHTML=m1Explanations[m1Step];
+ $("m1Animate").textContent=m1Step===3?"↻ Ulangi penjelasan":"Lanjutkan pengamatan";
+});
+$("m1ResetDiagram").addEventListener("click",resetM1Diagram);
+$("m1Calculate").addEventListener("click",()=>{
+ const total=readInteger("m1Total",1,100000000),a=readInteger("m1A",0,100000000),b=readInteger("m1B",0,100000000);
+ if([total,a,b].some(v=>v===null)){showResult("m1Result","<strong>Periksa kembali angka.</strong><p>Isi semua kolom dengan bilangan bulat yang valid.</p>");return}
+ if(a+b>total){showResult("m1Result","<strong>Angka belum sesuai.</strong><p>Jumlah kupon buku dan tumbler tidak boleh melebihi jumlah seluruh kupon.</p>");return}
+ const union=(a+b)/total;
+ showResult("m1Result",`<h3>Langkah penyelesaian</h3><p>n(S) = ${total}, n(A) = ${a}, dan n(B) = ${b}.</p><div class="math">P(A) = ${a}/${total} = ${decimal(a/total)}</div><div class="math">P(B) = ${b}/${total} = ${decimal(b/total)}</div><div class="math">P(A ∩ B) = 0</div><div class="math">P(A ∪ B) = P(A) + P(B)</div><div class="math">P(A ∪ B) = ${a}/${total} + ${b}/${total} = ${fraction(a+b,total)}</div><p><strong>Jadi, peluang mendapatkan buku atau tumbler adalah ${fraction(a+b,total)} atau ${decimal(union)}.</strong></p>`);
+ setSummary(`<strong>Kesimpulan Materi 1 — Kejadian saling lepas.</strong><p>Kejadian A dan B tidak memiliki anggota yang sama.</p><div class="math">P(A ∪ B) = P(A) + P(B)</div><p>Peluang berdasarkan datamu adalah ${fraction(a+b,total)} atau ${decimal(union)}.</p>`);
+});
+
+/* MATERI 2 */
+let m2Started=false;
+function resetM2(){
+ $("m2CircleA").setAttribute("cx","145");$("m2CircleB").setAttribute("cx","355");
+ $("m2ClipCircle").setAttribute("cx","190");$("m2Intersection").setAttribute("cx","355");
+ $("m2Intersection").setAttribute("fill","#3976d3");$("m2Intersection").setAttribute("opacity","0");
+ $("m2LabelA").setAttribute("x","145");$("m2LabelB").setAttribute("x","355");
+ $("m2CircleA").setAttribute("fill-opacity",".72");$("m2CircleB").setAttribute("fill-opacity",".72");
+ $("m2CircleA").setAttribute("r","72");$("m2CircleB").setAttribute("r","72");
+ $("m2DiagramText").textContent='Tekan “Mulai animasi” untuk melihat kedua kejadian bergerak hingga beririsan.';
+ ["m2ObserveA","m2ObserveB","m2ObserveI"].forEach(id=>$(id).disabled=true);
+ $("m2Start").disabled=false;m2Started=false;
+}
+$("m2Start").addEventListener("click",()=>{
+ $("m2CircleA").setAttribute("cx","190");$("m2CircleB").setAttribute("cx","310");
+ $("m2ClipCircle").setAttribute("cx","190");$("m2Intersection").setAttribute("cx","310");
+ $("m2Intersection").setAttribute("fill","#8061d9");$("m2Intersection").setAttribute("opacity","1");
+ $("m2LabelA").setAttribute("x","165");$("m2LabelB").setAttribute("x","335");
+ $("m2DiagramText").innerHTML="<strong>Kedua kejadian mulai beririsan.</strong><p>Daerah irisan menunjukkan anggota yang termasuk A dan B sekaligus.</p>";
+ ["m2ObserveA","m2ObserveB","m2ObserveI"].forEach(id=>$(id).disabled=false);
+ $("m2Start").disabled=true;m2Started=true;
+});
+$("m2Reset").addEventListener("click",resetM2);
+$("m2ObserveA").addEventListener("click",()=>{
+ if(!m2Started)return;
+ $("m2CircleA").setAttribute("r","78");$("m2CircleB").setAttribute("r","72");
+ $("m2CircleA").setAttribute("fill-opacity","1");$("m2CircleB").setAttribute("fill-opacity",".22");
+ $("m2Intersection").setAttribute("fill","#3976d3");$("m2Intersection").setAttribute("opacity","1");
+ $("m2DiagramText").innerHTML="<strong>Mengamati kejadian A.</strong><p>Seluruh bagian A, termasuk irisan A ∩ B, ditampilkan biru.</p>";
+});
+$("m2ObserveB").addEventListener("click",()=>{
+ if(!m2Started)return;
+ $("m2CircleA").setAttribute("r","72");$("m2CircleB").setAttribute("r","78");
+ $("m2CircleA").setAttribute("fill-opacity",".22");$("m2CircleB").setAttribute("fill-opacity","1");
+ $("m2Intersection").setAttribute("fill","#8061d9");$("m2Intersection").setAttribute("opacity","1");
+ $("m2DiagramText").innerHTML="<strong>Mengamati kejadian B.</strong><p>Seluruh bagian B, termasuk irisan A ∩ B, ditampilkan ungu.</p>";
+});
+$("m2ObserveI").addEventListener("click",()=>{
+ if(!m2Started)return;
+ $("m2CircleA").setAttribute("r","72");$("m2CircleB").setAttribute("r","72");
+ $("m2CircleA").setAttribute("fill-opacity",".18");$("m2CircleB").setAttribute("fill-opacity",".18");
+ $("m2Intersection").setAttribute("fill","#7e53b8");$("m2Intersection").setAttribute("opacity","1");
+ $("m2DiagramText").innerHTML="<strong>Mengamati irisan A ∩ B.</strong><p>Daerah irisan merupakan anggota A dan B sekaligus.</p><div class='math'>P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</div>";
+});
+$("m2Calculate").addEventListener("click",()=>{
+ const total=readInteger("m2Total",1,100000000),a=readInteger("m2A",0,100000000),b=readInteger("m2B",0,100000000),i=readInteger("m2I",0,100000000);
+ if([total,a,b,i].some(v=>v===null)){showResult("m2Result","<strong>Periksa kembali angka.</strong><p>Isi semua kolom dengan bilangan bulat yang valid.</p>");return}
+ if(a>total||b>total||i>Math.min(a,b)||a+b-i>total){showResult("m2Result","<strong>Data belum masuk akal.</strong><p>Periksa jumlah anggota klub dan irisan.</p>");return}
+ const union=a+b-i,pUnion=union/total;
+ showResult("m2Result",`<h3>Langkah penyelesaian</h3><p>n(S) = ${total}, n(A) = ${a}, n(B) = ${b}, dan n(A ∩ B) = ${i}.</p><div class="math">P(A) = ${a}/${total} = ${decimal(a/total)}</div><div class="math">P(B) = ${b}/${total} = ${decimal(b/total)}</div><div class="math">P(A ∩ B) = ${i}/${total} = ${decimal(i/total)}</div><div class="math">P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</div><div class="math">P(A ∪ B) = (${a} + ${b} − ${i})/${total} = ${union}/${total}</div><p><strong>Jadi, peluangnya ${fraction(union,total)} atau ${decimal(pUnion)}.</strong></p>`);
+ setSummary(`<strong>Kesimpulan Materi 2 — Kejadian tidak saling lepas.</strong><p>Kedua kejadian memiliki anggota yang sama.</p><div class="math">P(A ∪ B) = P(A) + P(B) − P(A ∩ B)</div><p>Peluang mengikuti minimal satu klub adalah ${fraction(union,total)} atau ${decimal(pUnion)}.</p>`);
+});
+
+/* MATERI 3 */
+function flipCoin(num){
+ const coin=$("coin"+num);coin.classList.remove("flip");void coin.offsetWidth;coin.classList.add("flip");
+ const result=Math.random()<.5?"Angka":"Gambar";
+ coin.textContent=result==="Angka"?"A":"G";$("coin"+num+"Text").textContent="Hasil: "+result;
+}
+$("flip1").addEventListener("click",()=>flipCoin(1));
+$("flip2").addEventListener("click",()=>flipCoin(2));
+$("resetCoins").addEventListener("click",()=>{
+ ["coin1","coin2"].forEach(id=>{$(id).textContent="?";$(id).classList.remove("flip")});
+ $("coin1Text").textContent="Belum dilempar";$("coin2Text").textContent="Belum dilempar";
+});
+$("m3Calculate").addEventListener("click",()=>{
+ const a=readInteger("m3A",0,100),b=readInteger("m3B",0,100);
+ if(a===null||b===null){showResult("m3Result","<strong>Periksa kembali angka.</strong><p>Masukkan peluang dalam persen dari 0 sampai 100.</p>");return}
+ const pa=a/100,pb=b/100,both=pa*pb;
+ showResult("m3Result",`<h3>Langkah penyelesaian</h3><p>Ubah peluang dari persen menjadi desimal.</p><div class="math">P(A) = ${a}/100 = ${pa}</div><div class="math">P(B) = ${b}/100 = ${pb}</div><div class="math">P(A ∩ B) = P(A) × P(B)</div><div class="math">P(A ∩ B) = ${pa} × ${pb} = ${both}</div><p><strong>Jadi, peluang kedua kejadian terjadi bersama-sama adalah ${decimal(both)}.</strong></p>`);
+ setSummary(`<strong>Kesimpulan Materi 3 — Kejadian saling bebas.</strong><p>Terjadinya A tidak mengubah peluang B.</p><div class="math">P(A ∩ B) = P(A) × P(B)</div><p>Peluang kedua kejadian bersama-sama adalah ${decimal(both)}.</p>`);
+});
+
+/* MATERI 4 — PELUANG BERSYARAT */
+let balls=[],draws=[],nextBallId=0,ballsConfigured=false,formulaCounts=null;
+let selectedM4Button=null;
+
+function resetM4ButtonColors(){
+ selectedM4Button=null;
+ ["m4ShowBA","m4ShowBlue","m4ShowAB"].forEach(id=>{
+  $(id).classList.remove("selected","blue-selected","green-selected");
+ });
+}
+function selectM4Button(id){
+ resetM4ButtonColors();
+ selectedM4Button=id;
+ const button=$(id);
+ if(id==="m4ShowBlue")button.classList.add("blue-selected");
+ else if(id==="m4ShowAB")button.classList.add("green-selected");
+ else button.classList.add("selected");
+}
+function clearM4Conclusion(){
+ hideResult("m4FormulaResult");
+ clearSummary();
+}
+function updateFormulaButtons(){
+ const ready=ballsConfigured&&formulaCounts&&formulaCounts.total>=2;
+ ["m4ShowBA","m4ShowBlue","m4ShowAB"].forEach(id=>$(id).disabled=!ready);
+ if(!ready){
+  $("m4FormulaHint").textContent="Terapkan jumlah bola terlebih dahulu. Diperlukan minimal dua bola.";
+  return;
+ }
+ $("m4FormulaHint").textContent=
+  `Jumlah awal: ${formulaCounts.red} merah dan ${formulaCounts.blue} biru. Pilih kondisi untuk melihat peluang teoretis. Riwayat pengambilan aktual: ${draws.length} bola.`;
+}
+function makeBallSet(red,blue){
+ balls=[];draws=[];nextBallId=0;ballsConfigured=true;
+ formulaCounts={red,blue,total:red+blue};
+ for(let i=0;i<red;i++)balls.push({id:nextBallId++,color:"red"});
+ for(let i=0;i<blue;i++)balls.push({id:nextBallId++,color:"blue"});
+ shuffle(balls);
+ resetM4ButtonColors();
+ renderBalls();renderDraws();clearM4Conclusion();
+ $("m4LiveResult").innerHTML=`<strong>Kantong siap.</strong><p>Terdapat ${red} bola merah dan ${blue} bola biru, total ${red+blue} bola.</p><p>Klik bola untuk mengambil bola pertama.</p>`;
+ $("m4DrawText").textContent="Silakan pilih bola pertama.";
+ updateFormulaButtons();
+}
+function remainingBalls(){
+ return balls.filter(b=>!draws.some(d=>d.id===b.id));
+}
+function renderBalls(){
+ const box=$("ballBox");box.innerHTML="";
+ if(!ballsConfigured)return;
+ balls.forEach(ball=>{
+  const button=document.createElement("button");
+  button.type="button";
+  button.className="ball "+(ball.color==="red"?"red-ball":"blue-ball");
+  button.setAttribute("aria-label","Ambil bola "+(ball.color==="red"?"merah":"biru"));
+  button.title="Ambil bola "+(ball.color==="red"?"merah":"biru");
+  const alreadyDrawn=draws.some(d=>d.id===ball.id);
+  button.disabled=alreadyDrawn;
+  if(alreadyDrawn)button.style.visibility="hidden";
+  button.addEventListener("click",()=>drawBall(ball.id));
+  box.appendChild(button);
+ });
+ const remaining=remainingBalls();
+ const red=remaining.filter(b=>b.color==="red").length;
+ const blue=remaining.filter(b=>b.color==="blue").length;
+ $("m4RemainingText").textContent=`Sisa dalam kantong: ${remaining.length} bola (merah ${red}, biru ${blue}).`;
+}
+function renderDraws(){
+ for(let i=0;i<2;i++){
+  const ball=draws[i];
+  const slot=$(["m4Slot1","m4Slot2"][i]);
+  const label=$(["m4FirstText","m4SecondText"][i]);
+  if(!ball){
+   slot.style.display="none";
+   slot.className="slot-ball";
+   label.textContent="Belum diambil";
+  }else{
+   slot.style.display="block";
+   slot.className="slot-ball "+(ball.color==="red"?"red-ball":"blue-ball");
+   label.textContent=ball.color==="red"?"Merah":"Biru";
+  }
+ }
+ $("m4Undo").disabled=draws.length===0;
+ $("m4History").innerHTML=draws.length
+  ?"<strong>Urutan pengambilan:</strong> "+draws.map((d,i)=>`${i+1}. ${d.color==="red"?"Merah":"Biru"}`).join(" → ")
+  :"Belum ada bola yang diambil.";
+}
+function updateLiveProbability(){
+ const remaining=remainingBalls();
+ const red=remaining.filter(b=>b.color==="red").length;
+ const blue=remaining.filter(b=>b.color==="blue").length;
+ const total=remaining.length;
+ let html=`<strong>Perkembangan pengambilan bola</strong>
+ <p>Jumlah bola yang sudah diambil: ${draws.length}.</p>
+ <p>Urutan pengambilan: ${draws.map((d,i)=>`${i+1}. ${d.color==="red"?"Merah":"Biru"}`).join(" → ")||"Belum ada"}.</p>
+ <p>Bola tersisa: ${red} merah dan ${blue} biru, total ${total} bola.</p>`;
+ if(total>0){
+  html+=`<p>Peluang bola berikutnya merah:</p>
+  <div class="math">P(merah berikutnya | riwayat pengambilan) = ${red}/${total} = ${decimal(red/total)}</div>
+  <p>Peluang bola berikutnya biru:</p>
+  <div class="math">P(biru berikutnya | riwayat pengambilan) = ${blue}/${total} = ${decimal(blue/total)}</div>`;
+ }else{
+  html+=`<p><strong>Semua bola sudah diambil.</strong> Tidak ada pengambilan berikutnya sampai bola dikembalikan.</p>`;
+ }
+ html+=`<p class="note">Peluang ini diperbarui setiap kali bola diambil karena jumlah bola di dalam kantong berubah.</p>`;
+ $("m4LiveResult").innerHTML=html;
+}
+function drawBall(id){
+ if(!ballsConfigured)return;
+ const ball=balls.find(b=>b.id===id);
+ if(!ball||draws.some(d=>d.id===id))return;
+ draws.push({id:ball.id,color:ball.color});
+ resetM4ButtonColors();
+ renderBalls();renderDraws();updateFormulaButtons();
+ hideResult("m4FormulaResult");clearSummary();
+ $("m4DrawText").textContent=`Pengambilan ke-${draws.length}: bola ${ball.color==="red"?"merah":"biru"}. Peluang berikutnya sudah diperbarui.`;
+ updateLiveProbability();
+}
+$("m4SetBalls").addEventListener("click",()=>{
+ const red=readInteger("m4RedCount",1,20);
+ const blue=readInteger("m4BlueCount",1,20);
+ if(red===null||blue===null){
+  ballsConfigured=false;balls=[];draws=[];formulaCounts=null;
+  resetM4ButtonColors();renderBalls();renderDraws();clearM4Conclusion();
+  $("m4DrawText").textContent="Masukkan jumlah bola merah dan biru dari 1 sampai 20.";
+  $("m4LiveResult").innerHTML="<strong>Jumlah bola belum valid.</strong><p>Isi kedua kolom dengan bilangan bulat dari 1 sampai 20, lalu tekan “Terapkan jumlah bola”.</p>";
+  $("m4RemainingText").textContent="Belum ada bola yang diatur.";
+  updateFormulaButtons();return;
+ }
+ makeBallSet(red,blue);
+});
+$("m4Reset").addEventListener("click",()=>{
+ if(!ballsConfigured||!formulaCounts){
+  $("m4LiveResult").innerHTML="Masukkan jumlah bola merah dan biru, lalu klik “Terapkan jumlah bola”.";
+  return;
+ }
+ makeBallSet(formulaCounts.red,formulaCounts.blue);
+ $("m4DrawText").textContent="Semua bola dikembalikan. Silakan mulai percobaan baru.";
+ updateLiveProbability();
+});
+$("m4Undo").addEventListener("click",()=>{
+ if(!draws.length)return;
+ draws.pop();
+ resetM4ButtonColors();renderBalls();renderDraws();clearM4Conclusion();updateFormulaButtons();
+ $("m4DrawText").textContent=draws.length===0
+  ?"Pengambilan dibatalkan. Pilih bola pertama."
+  :`Pengambilan terakhir dibatalkan. Sekarang ${draws.length} bola telah diambil.`;
+ updateLiveProbability();
+});
+
+/* Membantu menampilkan peluang sebagai pecahan dan desimal. */
+function showConditionalResult(buttonId,title,conditionText,numerator,denominator,explanation){
+ selectM4Button(buttonId);
+ if(denominator<=0){
+  showResult("m4FormulaResult",`<h3>${title}</h3><p>${explanation}</p><p><strong>Peluang tidak dapat dihitung karena kondisi yang diketahui memiliki peluang nol.</strong></p>`);
+  setSummary(`<strong>Kesimpulan Materi 4.</strong><p>${explanation}</p>`);
+  return;
+ }
+ const p=numerator/denominator;
+ showResult("m4FormulaResult",`<h3>${title}</h3>
+ <p>${conditionText}</p>
+ <div class="math">Peluang bersyarat = ${numerator}/${denominator}</div>
+ <div class="math">= ${fraction(numerator,denominator)} = ${decimal(p)}</div>
+ <p>${explanation}</p>
+ <p><strong>Jadi, peluang berdasarkan kondisi tersebut adalah ${fraction(numerator,denominator)} atau ${decimal(p)}.</strong></p>
+ <p class="note">Ini adalah perhitungan teoretis berdasarkan jumlah bola awal. Peluang pengambilan berikutnya berdasarkan bola yang tersisa ditampilkan pada bagian hasil pengambilan.</p>`);
+ setSummary(`<strong>Kesimpulan Materi 4 — Peluang bersyarat.</strong><p>${conditionText}</p><div class="math">Peluang bersyarat = ${fraction(numerator,denominator)} = ${decimal(p)}</div>`);
+}
+
+/* P(B|A): peluang bola kedua merah jika bola pertama merah. */
+$("m4ShowBA").addEventListener("click",()=>{
+ if(!ballsConfigured||!formulaCounts)return;
+ const {red,total}=formulaCounts;
+ selectM4Button("m4ShowBA");
+ const actualFirst=draws[0];
+ const conditionText=actualFirst
+  ?`Hasil aktual bola pertama adalah ${actualFirst.color==="red"?"merah":"biru"}. Perhitungan berikut menunjukkan kondisi teoretis: bola pertama merah.`
+  :"Kondisi yang dipilih: bola pertama merah.";
+ if(red<1){
+  showConditionalResult("m4ShowBA","P(B|A): bola kedua merah jika bola pertama merah",conditionText,0,total-1,"Tidak tersedia bola merah untuk memenuhi kondisi bola pertama merah.");
+  return;
+ }
+ const denominator=total-1;
+ const numerator=Math.max(red-1,0);
+ showConditionalResult(
+  "m4ShowBA",
+  "P(B|A): bola kedua merah jika bola pertama merah",
+  conditionText,
+  numerator,
+  denominator,
+  `Jika bola pertama merah, satu bola merah telah diambil. Tersisa ${numerator} bola merah dari ${denominator} bola.`
+ );
+});
+
+/* P(B|Aᶜ): peluang bola kedua merah jika bola pertama biru. */
+$("m4ShowBlue").addEventListener("click",()=>{
+ if(!ballsConfigured||!formulaCounts)return;
+ const {red,blue,total}=formulaCounts;
+ const denominator=total-1;
+ selectM4Button("m4ShowBlue");
+ const actualFirst=draws[0];
+ const conditionText=actualFirst
+  ?`Hasil aktual bola pertama adalah ${actualFirst.color==="red"?"merah":"biru"}. Perhitungan berikut menunjukkan kondisi teoretis: bola pertama biru.`
+  :"Kondisi yang dipilih: bola pertama biru.";
+ if(blue<1){
+  showConditionalResult("m4ShowBlue","P(B|Aᶜ): bola kedua merah jika bola pertama biru",conditionText,0,denominator,"Kondisi bola pertama biru tidak mungkin terjadi karena tidak ada bola biru di kantong.");
+  return;
+ }
+ showConditionalResult(
+  "m4ShowBlue",
+  "P(B|Aᶜ): bola kedua merah jika bola pertama biru",
+  conditionText,
+  red,
+  denominator,
+  `Jika bola pertama biru, jumlah bola merah tetap ${red}, sedangkan jumlah seluruh bola tersisa menjadi ${denominator}.`
+ );
+});
+
+/* P(A|B): peluang bola pertama merah jika diketahui bola kedua merah. */
+$("m4ShowAB").addEventListener("click",()=>{
+ if(!ballsConfigured||!formulaCounts)return;
+ const {red,total}=formulaCounts;
+ const denominator=red;
+ const numerator=red>0?Math.max(red-1,0):0;
+ const conditionText="Kondisi yang diketahui: bola kedua berwarna merah.";
+ selectM4Button("m4ShowAB");
+ if(denominator===0){
+  showResult("m4FormulaResult",`<h3>P(A|B): bola pertama merah jika bola kedua merah</h3><p>Tidak ada bola merah di kantong, sehingga kejadian bola kedua merah memiliki peluang nol.</p><div class="math">P(A|B) = P(A ∩ B) / P(B)</div><p><strong>Peluang bersyarat ini tidak terdefinisi karena P(B) = 0.</strong></p>`);
+  setSummary("<strong>Kesimpulan Materi 4.</strong><p>Peluang bersyarat tidak terdefinisi jika kejadian yang dijadikan kondisi memiliki peluang nol.</p>");
+  return;
+ }
+ const conditional=numerator/(total-1);
+ showResult("m4FormulaResult",`<h3>P(A|B): bola pertama merah jika bola kedua merah</h3>
+ <p><strong>Kejadian A:</strong> bola pertama merah.</p>
+ <p><strong>Kejadian B:</strong> bola kedua merah.</p>
+ <div class="math">P(A|B) = P(A ∩ B) / P(B)</div>
+ <div class="math">P(A ∩ B) = (${red}/${total}) × (${Math.max(red-1,0)}/${total-1})</div>
+ <div class="math">P(B) = ${red}/${total}</div>
+ <div class="math">P(A|B) = (${Math.max(red-1,0)}/${total-1}) = ${decimal(conditional)}</div>
+ <p><strong>Jadi, peluang bola pertama merah jika diketahui bola kedua merah adalah ${fraction(numerator,total-1)} atau ${decimal(conditional)}.</strong></p>
+ <p class="note">Rumus ini merupakan peluang teoretis. Jika kedua bola aktual sudah diketahui, urutan warna yang benar-benar terambil adalah hasil percobaan, bukan lagi peluang yang belum diketahui.</p>`);
+ setSummary(`<strong>Kesimpulan Materi 4 — P(A|B).</strong><p>Peluang bola pertama merah jika diketahui bola kedua merah dihitung dengan membagi peluang A dan B terjadi bersama-sama dengan peluang B.</p><div class="math">P(A|B) = P(A ∩ B) / P(B)</div><p>Peluang teoretisnya ${fraction(numerator,total-1)} atau ${decimal(conditional)}.</p>`);
+});
+
+/* Inisialisasi */
+ballsConfigured=false;balls=[];draws=[];renderBalls();renderDraws();updateFormulaButtons();
+</script>
+</body>
+</html>
